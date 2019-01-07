@@ -8,7 +8,7 @@ import requests
 import json as js
 import matplotlib.pyplot as plt
 
-def fetch_symbol(query):
+def fetch_symbol():
     stock = ''
     while not stock:
         stock = input("What stock would you like to view? ")
@@ -66,7 +66,7 @@ t_series = series()
 api_root = 'https://www.alphavantage.co'
 api_series = time_series(t_series)
 api = '&apikey=EKFVA2O5LEO3WL88'
-fhand = fetch_symbol(t_series)
+fhand = fetch_symbol()
 #print(fhand)
 #print(fhand[t_series]) #DeBug
 #print(t_series)
