@@ -1,43 +1,94 @@
 #!/usr/bin/python3
 #Alpha Vatange API APP
 #Enter in stock symbol
-import urllib.request, urllib.parse, urllib.error
+import plotly.plotly as py
+import plotly.figure_factory as ff
+import pandas as pd
 import requests
-import json
-import datetime
+import json as js
+import matplotlib.pyplot as plt
 
+def fetch_symbol(query):
+    stock = ''
+    while not stock:
+        stock = input("What stock would you like to view? ")
+    return requests.get(api_root + api_series + stock + api).json()
+
+def series():
+    """this function promts the user for the desired time series. Day, week, month, etc"""
+    while True:
+        t_type = input('Please enter time series you would like to see. ' \
+                  'Daily[1], Weekly[2], Monthly[3]: ')
+        if t_type == '1':
+            t_type = 'Time Series (Daily)'
+            return t_type
+        elif t_type == '2':
+            t_type = 'Weekly Time Series'
+            return t_type
+        elif t_type == '3':
+            t_type = 'Monthly Time Series'
+            return t_type
+        else:
+            print('Error')
+            continue
+    return t_type
+
+def time_series(t_series):
+    """this"""
+    if t_series == 'Time Series (Daily)':
+        api_series = '/query?function=TIME_SERIES_DAILY&symbol='
+        return api_series
+    elif t_series == 'Weekly Time Series':
+        api_series = '/query?function=TIME_SERIES_WEEKLY&symbol='
+        return api_series
+    elif t_series == 'Monthly Time Series':
+        api_series = '/query?function=TIME_SERIES_MONTHLY&symbol='
+        return api_series
+    else:
+        print('Error') #DeBug
+        print(t_series) #DeBug
+
+def company_symbol():
+    try:
+        #stock = ''
+        #while not stock:
+            #stock = input("What stock would you like to view? ")
+        stock = fetch_symbol(stock)
+        if len(stock) == 0:
+            print("Please enter a symbol.")
+        elif (stock) == 'Error Message':
+            print('else statment')
+    except requests.exceptions.ConnectionError:
+        print("Couldn't connect to server! Please check the network?")
+    return stock
+
+t_series = series()
 api_root = 'https://www.alphavantage.co'
-api_location = '/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol='
-api = ''#Your Alpha Vantage key goes here
-api_symbol = 'AMD'
-#replace with (input('Please enter stock symbol:')) when complete
+api_series = time_series(t_series)
+api = '&apikey=EKFVA2O5LEO3WL88'
+fhand = fetch_symbol(t_series)
+#print(fhand)
+#print(fhand[t_series]) #DeBug
+#print(t_series)
 
-def fetch_location(query):
-    return requests.get(api_root + api_location + query).json()
-def fetch_symbol(symbol):
-    return requests.get(api_root + api_symbol + symbol).json()
+lst = []
 
-data = requests.get(api_root + api_location + api_symbol + api).json()
+for key, values in fhand.items():
+    if key == t_series:
+        for date, sinfo in values.items():
+            #Finds the date and values for stock
+            for cols, nums in sinfo.items():
+                #finds the closing price
+                if cols == '4. close':
+                    #create list for date and price key values
+                    lst.append([date,nums])
 
-info = data['Meta Data']
+#create series from list
+ds = pd.Series(lst)
+#create dataframe from list
+df = pd.DataFrame(lst,columns=['Date','Price'])
+#print(ds)
+print(df)
 
-for k, v in info.items():
-    #split the key value to lose #
-    new = k.split()
-    print(new[1],':', v)
-
-
-
-#varible time set to today's date
-time = datetime.date.today()
-#variable info set to time series and today's date as str
-info2 = data['Time Series (Daily)'][str(time)]
-
-#debug time
-#print(time)
-
-#loop through info var in key value pairs
-for k, v in info2.items():
-    #split the key value to lose #
-    new2 = k.split()
-    print(new2[1],':', '{:>10}'.format(v), '\n')
+plt.plot(df)
+plt.show()
