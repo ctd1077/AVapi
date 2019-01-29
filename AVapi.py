@@ -65,7 +65,7 @@ def company_symbol():
 t_series = series()
 api_root = 'https://www.alphavantage.co'
 api_series = time_series(t_series)
-api = '&apikey=EKFVA2O5LEO3WL88'
+api = 'Enter API code here'
 fhand = fetch_symbol()
 #print(fhand)
 #print(fhand[t_series]) #DeBug
