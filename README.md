@@ -1,3 +1,3 @@
-# Alpha Vantage API
+# Alpha Vantage
 
 Under Construction
