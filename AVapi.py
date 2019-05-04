@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-#Alpha Vatange API APP
+#Alpha Vantage API APP
 
 import requests
 import numpy as np
