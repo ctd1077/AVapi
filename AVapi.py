@@ -9,20 +9,24 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 def fetch_symbol(stock):
+    """This function fetches the json file for the user request"""
     return requests.get(api_root + api_series + stock + api, stream=False).json()
 
 def company_symbol():
+    """The symbol function ask for user input and returns
+    a json file plus the symbol itself uppercased"""
     try:
         stc = ''
         while not stc:
             stc = input("What stock would you like to view? ")
+            stc = stc.upper()
             print('Please wait while we process your request...')
         stock = fetch_symbol(stc)
         if len(stc) == 0:
             print("Please enter a symbol.")
     except requests.exceptions.ConnectionError:
         print("Couldn't connect to server! Please check the network?")
-    return stock
+    return stock, stc
 
 def series():
     """This function promts the user for the desired
@@ -74,9 +78,8 @@ def createDframe(fhand):
                     if cols == '4. close':
                         #create list for date and price key values
                         lst.append([date,nums])
-    df = pd.DataFrame(lst,columns=['Date','Price'])
-    df = df.set_index('Date')
-    df.sort_index(inplace=True)
+    df = pd.DataFrame(lst, columns=['Date', 'Price'])
+    df.sort_index(ascending=False, inplace=True)
     return df
 
 def createDframe2(fhand):
@@ -94,45 +97,45 @@ def createDframe2(fhand):
                         lst.append([date, vol])
 
     df = pd.DataFrame(lst, columns=['Date', 'Volume'])
-    df = df.set_index('Date')
-    df.sort_index(inplace=True)
+    df.sort_index(ascending=False, inplace=True)
     return df
 
 def chart():
-
+    """This fucntion prints out a chart of the stock price by time series"""
     df = createDframe(fhand)
-    df = df['Price'].astype(float)
+    price = df['Price'].astype(float)
+    date = df.Date.astype('O')
     plt.style.use('seaborn-whitegrid')
     fig, ax = plt.subplots()
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=15))
+    plt.plot(date, price)
+    plt.fill_between(date, price, facecolor='#A2142F', alpha=0.5)
     fig.autofmt_xdate()
-    ax.xaxis.set_major_locator(MaxNLocator(nbins=12))
-    ax.plot(df)
-    plt.xlabel('Date')
-    plt.ylabel('Price')
-    plt.title('Price Chart')
+    plt.xlabel('Date', fontsize=10, fontweight='bold')
+    plt.ylabel('Price', fontsize=10, fontweight='bold')
+    plt.title(stc, fontsize=14, fontweight='bold')
     return plt.show()
 
 def chart2():
-
+    """This fucntion prints out a chart of the stock volume by time series"""
     df = createDframe2(fhand)
-    df = df['Volume'].astype(float)
-    plt.style.use('seaborn-whitegrid')
+    vol = df['Volume'].astype(float)
+    date = df.Date.astype('O')
     fig, ax = plt.subplots()
     fig.autofmt_xdate()
-    ax.xaxis.set_major_locator(MaxNLocator(nbins=12))
-    ax.plot(df)
-    plt.xlabel('Date')
-    plt.ylabel('Volume')
-    plt.title('Volume Chart')
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=15))
+    plt.bar(date, vol, color='#D95319', )
+    plt.xlabel('Date', fontsize=10, fontweight='bold')
+    plt.ylabel('Volume', fontsize=10, fontweight='bold')
+    plt.title(stc, fontsize=14, fontweight='bold')
     return plt.show()
-
 
 if __name__ == '__main__':
     t_series = series()
     api_root = 'https://www.alphavantage.co'
     api_series = time_series(t_series)
-    api = #'API KEY GOES HERE'
-    fhand = company_symbol()
+    api = '&apikey=EKFVA2O5LEO3WL88'
+    fhand, stc = company_symbol()
 
     while True:
         ans = input('Which chart would you like to see? \nPress 1 for Price and 2 for Volume or 3 to quit: ')
