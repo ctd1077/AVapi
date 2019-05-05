@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import json as js
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 def fetch_symbol(stock):
     return requests.get(api_root + api_series + stock + api, stream=False).json()
@@ -15,16 +16,10 @@ def company_symbol():
         stc = ''
         while not stc:
             stc = input("What stock would you like to view? ")
+            print('Please wait while we process your request...')
         stock = fetch_symbol(stc)
         if len(stc) == 0:
             print("Please enter a symbol.")
-        #elif len(stc).isdigit() == True:
-            #print ("It Works")
-        #elif stock != '"Meta Data"':
-            #print('elif statment')
-            # Takes to long. Waits for JSON file and doesn't ask
-            # to enter in another stock fetch_symbol
-            # qyuicker way to tell not a stock symbol?
     except requests.exceptions.ConnectionError:
         print("Couldn't connect to server! Please check the network?")
     return stock
@@ -53,6 +48,7 @@ def series():
 def time_series(t_series):
     """The time_series function takes the selected time series and return
     the correct format for the url to retrive the symbol time series"""
+    #try except block here
     if t_series == 'Time Series (Daily)':
         api_series = '/query?function=TIME_SERIES_DAILY&symbol='
         return api_series
@@ -63,23 +59,7 @@ def time_series(t_series):
         api_series = '/query?function=TIME_SERIES_MONTHLY&symbol='
         return api_series
     else:
-        print('Error') #DeBug
-        print(t_series) #DeBug
-
-def date_price_df(fhand, t_series):
-    """The date_price_df function takes the file handle and creates a simple
-    data frame made up of the date and price"""
-    lst = []
-    for key, values in fhand.items():
-        if key == t_series:
-            for date, sinfo in values.items():
-                #Finds the date and values for stock
-                for cols, nums in sinfo.items():
-                    #finds the closing price
-                    if cols == '4. close':
-                        #create list for date and price key values
-                        lst.append([date,nums])
-    return lst
+        print('Error')
 
 def createDframe(fhand):
     """This function finds the date and price for the selected stock
@@ -95,6 +75,8 @@ def createDframe(fhand):
                         #create list for date and price key values
                         lst.append([date,nums])
     df = pd.DataFrame(lst,columns=['Date','Price'])
+    df = df.set_index('Date')
+    df.sort_index(inplace=True)
     return df
 
 def createDframe2(fhand):
@@ -104,16 +86,46 @@ def createDframe2(fhand):
     for key, values in fhand.items():
         if key == t_series:
             for date, sinfo in values.items():
-                #Finds the date and values for stock
+                # Finds the date and values for stock
                 for cols, vol in sinfo.items():
-                    #finds the volume
+                    # finds the volume
                     if cols == '5. volume':
-                        #create list for date and volume key values
-                        lst.append([date,vol])
+                        # create list for date and volume key values
+                        lst.append([date, vol])
 
-
-    df = pd.DataFrame(lst,columns=['Date','Volume'])
+    df = pd.DataFrame(lst, columns=['Date', 'Volume'])
+    df = df.set_index('Date')
+    df.sort_index(inplace=True)
     return df
+
+def chart():
+
+    df = createDframe(fhand)
+    df = df['Price'].astype(float)
+    plt.style.use('seaborn-whitegrid')
+    fig, ax = plt.subplots()
+    fig.autofmt_xdate()
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=12))
+    ax.plot(df)
+    plt.xlabel('Date')
+    plt.ylabel('Price')
+    plt.title('Price Chart')
+    return plt.show()
+
+def chart2():
+
+    df = createDframe2(fhand)
+    df = df['Volume'].astype(float)
+    plt.style.use('seaborn-whitegrid')
+    fig, ax = plt.subplots()
+    fig.autofmt_xdate()
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=12))
+    ax.plot(df)
+    plt.xlabel('Date')
+    plt.ylabel('Volume')
+    plt.title('Volume Chart')
+    return plt.show()
+
 
 if __name__ == '__main__':
     t_series = series()
@@ -121,5 +133,18 @@ if __name__ == '__main__':
     api_series = time_series(t_series)
     api = #'API KEY GOES HERE'
     fhand = company_symbol()
-    # Debug Print and test df
-    print(createDframe2(fhand))
+
+    while True:
+        ans = input('Which chart would you like to see? \nPress 1 for Price and 2 for Volume or 3 to quit: ')
+        if ans == '1':
+            chart()
+            continue
+        elif ans == '2':
+            chart2()
+            continue
+        elif ans == '3':
+            print('Have a good day!')
+            break
+        else:
+            print('Please check your response and try again.')
+            continue
