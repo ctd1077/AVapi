@@ -6,9 +6,6 @@ This application project sends a request to the Alpha Vantage API
 * A JSON file is returned
 * The app iterates through the JSON file looking for date, price, and volume
 
-## Still working on
-* Line chart for date/volume and date/price
-
 ## Deployment
 
 Run the .py
