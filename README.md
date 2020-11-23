@@ -22,4 +22,4 @@ This is a personal project but I am open to feedback.
 
 ## Authors
 
-* **Cambron Deatherage** - *Initial work* - [ctd1077](https://github.com/ctd1077)
+* **ctd1077** - *Initial work* - [ctd1077](https://github.com/ctd1077)
